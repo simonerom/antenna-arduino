@@ -38,8 +38,26 @@ Sorry but I cannot take time to maintain the library now...
 
 ## Example
 
-The following example sends a contract call on the Kovan testnet to set a value in a variable (currently the value does not get sent in the tx data and it's not working yet)
+The following example sends a contract call on the Kovan testnet to set a value in a variable.
 
+### Contract
+```c++
+pragma solidity ^0.4.18;
+
+contract Sample {
+    uint data;
+
+    function set(uint d) public{
+        data = d;
+    }
+
+    function get() public constant returns (uint retVal) {
+        return data;
+    }
+}
+```
+
+### Code
 ```c++
 #include <WiFi.h>
 #include <Contract.h>
