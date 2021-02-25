@@ -1,7 +1,13 @@
-## antenna-arduino
+## unmaintained
+
+Sorry but I cannot take time to maintain the library now...
+
+## web3-arduino
+
+![img](https://user-images.githubusercontent.com/891384/36104056-4994f600-1054-11e8-94f4-9f067610a6bf.png)
 
 - What is this library?
-    - This is an Arduino (or ESP32) library to interact with the IoTeX Blockchain.
+    - This is an Arduino (or ESP32) library to use web3 on Ethereum platform.
 
 - What is Arduino? 
     - Arduino is an open source computer hardware and software.
@@ -9,19 +15,19 @@
 - What is ESP32?
     - ESP32 is a series of low cost, low power system on a chip microcontrollers with integrated Wi-Fi and dual-mode Bluetooth. 
     - https://www.espressif.com/en/products/hardware/esp32/overview    
-- What is iotex-antenna?
-    - iotex-antenna is the IoTeX compatible API which implements the Generic JSON RPC spec. Originally Javascript version is developed.
-    - https://github.com/iotexproject/iotex-anetnna/
-- What is IoTeX?
-    - IoTeX is a blockchain platform tailor fit fot IoT. The foundation layer for "The Internet of Trusted Things".
-    - https://www.iotex.io/
+- What is web3?
+    - Web3 is the Ethereum compatible API which implements the Generic JSON RPC spec. Originally Javascript version is developed.
+    - https://github.com/ethereum/web3.js/
+- What is Ethereum?
+    - Ethereum is a decentralized platform for applications that run exactly as programmed without any chance of fraud, censorship or third-party interference.
+    - https://www.ethereum.org/
     
 ## Environment
 
 - Confirmed device
-    - ESP32-S2
-- Used IoTeX client
-    - ...
+    - ESP-WROOM-32
+- Used Ethereum client
+    - INFURA (https://infura.io)
 
 ## Installation
 
@@ -37,28 +43,28 @@ Please refer `examples` directory.
 ### setup
 
 ```C++
-#define IOTEX_CLIENT_HOST "rinkeby.infura.io"
-#define IOTEX_CLIENT_PATH "/<YOUR_IOTEX_CLIENT_ID>"
+#define INFURA_HOST "rinkeby.infura.io"
+#define INFURA_PATH "/<YOUR_INFURA_ID>"
 
-Antenna antenna(IOTEX_CLIENT_HOST, IOTEX_CLIENT_PATH);
+Web3 web3(INFURA_HOST, INFURA_PATH);
 ```
 
-### call antenna methods
+### call web3 methods
 
 ```C++
 char result[128];
 
-antenna.AntennaClientVersion(result);
+web3.Web3ClientVersion(result);
 USE_SERIAL.println(result);
 
-antenna.AntennaSha3("0x68656c6c6f20776f726c64", result);
+web3.Web3Sha3("0x68656c6c6f20776f726c64", result);
 USE_SERIAL.println(result);
 ```
 
 ### `call` to Contract
 
 ```C++
-Contract contract(&antenna, CONTRACT_ADDRESS);
+Contract contract(&web3, CONTRACT_ADDRESS);
 strcpy(contract.options.from, MY_ADDRESS);
 strcpy(contract.options.gasPrice,"2000000000000");
 contract.options.gas = 5000000;
@@ -70,9 +76,9 @@ USE_SERIAL.println(result);
 ### `sendTransaction` to Contract
 
 ```C++
-Contract contract(&antenna, CONTRACT_ADDRESS);
+Contract contract(&web3, CONTRACT_ADDRESS);
 contract.SetPrivateKey((uint8_t*)PRIVATE_KEY);
-uint32_t nonceVal = (uint32_t)antenna.EthGetTransactionCount((char *)MY_ADDRESS);
+uint32_t nonceVal = (uint32_t)web3.EthGetTransactionCount((char *)MY_ADDRESS);
 
 uint32_t gasPriceVal = 141006540;
 uint32_t  gasLimitVal = 3000000;

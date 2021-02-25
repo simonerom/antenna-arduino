@@ -7,7 +7,7 @@
 #include "CaCert.h"
 #include "Log.h"
 #include "Util.h"
-#include "cJSON/cJSON.h"
+#include "cJSON.h"
 #include <iostream>
 #include <sstream>
 
@@ -154,8 +154,8 @@ string Web3::EthSendSignedTransaction(const string* data, const uint32_t dataLen
     string m = "eth_sendRawTransaction";
     string p = "[\"" + *data + "\"]";
     string input = generateJson(&m, &p);
-#if 0
-    LOG(input);
+#if 1
+    LOG(input.c_str());
 #endif
     return exec(&input);
 }
@@ -188,10 +188,15 @@ string Web3::exec(const string* data) {
     string strHost = "Host: " + *host;
     string strContentLen = "Content-Length: " + lstr;
 
+    LOG("QUERY:");
     client.println(strPost.c_str());
+    LOG(strPost.c_str());
     client.println(strHost.c_str());
+    LOG(strHost.c_str());
     client.println("Content-Type: application/json");
     client.println(strContentLen.c_str());
+    LOG(strContentLen.c_str());
+    LOG("-----");
     client.println("Connection: close");
     client.println();
     client.println(data->c_str());
