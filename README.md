@@ -38,62 +38,102 @@ Sorry but I cannot take time to maintain the library now...
 
 ## Example
 
-Please refer `examples` directory.
+The following example sends a contract call on the Kovan testnet to set a value in a variable (currently the value does not get sent in the tx data and it's not working yet)
 
-### setup
+```c++
+#include <WiFi.h>
+#include <Contract.h>
 
-```C++
-#define INFURA_HOST "rinkeby.infura.io"
-#define INFURA_PATH "/<YOUR_INFURA_ID>"
+#include "esp_log.h"
+
+static const char* TAG = "MyModule";
+
+#define USE_SERIAL Serial
+
+#define ENV_SSID     "SSID_NAME"
+#define ENV_WIFI_KEY "WIFI_PASSWORD"
+
+// Replace with your wallet address
+string* MY_ADDRESS = new string("0x0000000000000000000000000000000000000000");
+// Replace with your infura project id
+string* INFURA_PATH = new string("/v3/YOUR_INFURA_PROJECT_ID");
+
+string* CONTRACT_ADDRESS = new string("0xa3de8b4dd8082d1ab09ff72e91e5561e9fdef860");
+string* INFURA_HOST = new string("kovan.infura.io");
+
+// Replace with your private key
+const char PRIVATE_KEY[] = {
+  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
+  0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00
+  };
 
 Web3 web3(INFURA_HOST, INFURA_PATH);
+
+void eth_send_example();
+
+void setup() {
+    USE_SERIAL.begin(115200);
+
+    for(uint8_t t = 4; t > 0; t--) {
+        USE_SERIAL.printf("[SETUP] WAIT %d...\n", t);
+        USE_SERIAL.flush();
+        delay(1000);
+    }
+
+    WiFi.begin(ENV_SSID, ENV_WIFI_KEY);
+
+    // attempt to connect to Wifi network:
+    while (WiFi.status() != WL_CONNECTED) {
+        Serial.print(".");
+        // wait 1 second for re-trying
+        delay(1000);
+    }
+
+    USE_SERIAL.println("Connected");
+
+    esp_log_level_set(TAG, ESP_LOG_VERBOSE);
+
+    eth_send_example();
+}
+
+void loop() {
+    // put your main code here, to run repeatedly:
+    delay(1000);
+}
+
+void eth_send_example() {
+    ESP_LOGI(TAG, "Creating the contract: %s", CONTRACT_ADDRESS);
+    Contract contract(&web3, CONTRACT_ADDRESS);
+    
+    ESP_LOGI(TAG, "Setting the signer account private key");
+    contract.SetPrivateKey((uint8_t*)PRIVATE_KEY);
+
+    ESP_LOGI(TAG, "Getting the nonce for the account");
+    uint32_t nonceVal = (uint32_t)web3.EthGetTransactionCount(MY_ADDRESS);
+   
+    ESP_LOGI(TAG, "Nonce = %d", nonceVal);
+
+    uint64_t gasPriceVal = 20000000000;
+    uint32_t  gasLimitVal = 3000000;
+
+    string* valueStr = new string("0x00");
+    uint8_t dataStr[100];
+    memset(dataStr, 0, 100);
+    string func = "set(uint256)";
+
+    string p = contract.SetupContractData(&func, 123);
+
+    ESP_LOGI(TAG, "Contract execution...");
+    string result = contract.SendTransaction(nonceVal, gasPriceVal, gasLimitVal, CONTRACT_ADDRESS, valueStr, &p);
+
+    ESP_LOGI(TAG, "Result = %s", result);
+
+}
 ```
 
-### call web3 methods
-
-```C++
-char result[128];
-
-web3.Web3ClientVersion(result);
-USE_SERIAL.println(result);
-
-web3.Web3Sha3("0x68656c6c6f20776f726c64", result);
-USE_SERIAL.println(result);
-```
-
-### `call` to Contract
-
-```C++
-Contract contract(&web3, CONTRACT_ADDRESS);
-strcpy(contract.options.from, MY_ADDRESS);
-strcpy(contract.options.gasPrice,"2000000000000");
-contract.options.gas = 5000000;
-contract.SetupContractData(result, "get()");
-contract.Call(result);
-USE_SERIAL.println(result);
-```
-
-### `sendTransaction` to Contract
-
-```C++
-Contract contract(&web3, CONTRACT_ADDRESS);
-contract.SetPrivateKey((uint8_t*)PRIVATE_KEY);
-uint32_t nonceVal = (uint32_t)web3.EthGetTransactionCount((char *)MY_ADDRESS);
-
-uint32_t gasPriceVal = 141006540;
-uint32_t  gasLimitVal = 3000000;
-uint8_t toStr[] = CONTRACT_ADDRESS;
-uint8_t valueStr[] = "0x00";
-uint8_t dataStr[100];
-memset(dataStr, 0, 100);
-contract.SetupContractData((char*)dataStr, "set(uint256)", 123);
-contract.SendTransaction((uint8_t *) result,
-                         nonceVal, gasPriceVal, gasLimitVal, toStr, valueStr, dataStr);
-
-USE_SERIAL.println(result);
-```
-
-## Dependency
+## Dependencies
 
 - [cJSON](https://github.com/DaveGamble/cJSON)
 - [secp256k1](https://github.com/bitcoin-core/secp256k1)
